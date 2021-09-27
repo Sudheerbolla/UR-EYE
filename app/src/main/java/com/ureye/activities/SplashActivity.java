@@ -1,8 +1,10 @@
-package com.ureye;
+package com.ureye.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+
+import com.ureye.R;
 
 public class SplashActivity extends BaseActivity {
 

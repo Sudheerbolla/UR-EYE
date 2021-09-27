@@ -1,4 +1,4 @@
-package com.ureye;
+package com.ureye.activities;
 
 import android.os.Bundle;
 
