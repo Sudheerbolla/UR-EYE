@@ -2,11 +2,64 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
+        android:id="@+id/rootLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/colorGreySep"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp"
         tools:context=".activities.MainActivity">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/txtObjectDetection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:background="@drawable/ic_button_bg"
+            android:minWidth="@dimen/one_seventy_five_dp"
+            android:paddingStart="@dimen/fifteen_dp"
+            android:paddingEnd="@dimen/fifteen_dp"
+            android:text="@string/detect_objects"
+            android:textColor="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/txtTextRecognition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:background="@drawable/ic_button_bg"
+            android:minWidth="@dimen/one_seventy_five_dp"
+            android:paddingStart="@dimen/fifteen_dp"
+            android:paddingEnd="@dimen/fifteen_dp"
+            android:text="@string/text_recognition"
+            android:textColor="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/txtFaceRecognition"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:background="@drawable/ic_button_bg"
+            android:minWidth="@dimen/one_seventy_five_dp"
+            android:paddingStart="@dimen/fifteen_dp"
+            android:paddingEnd="@dimen/fifteen_dp"
+            android:text="@string/face_recognition"
+            android:textColor="@color/white" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/txtViewSavedData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:background="@drawable/ic_button_bg"
+            android:minWidth="@dimen/one_seventy_five_dp"
+            android:paddingStart="@dimen/fifteen_dp"
+            android:paddingEnd="@dimen/fifteen_dp"
+            android:text="@string/view_saved_data"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
 
 </layout>

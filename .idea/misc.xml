@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/drawable/ic_button_bg.xml" value="0.3828125" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/drawable/ic_cam_switch.xml" value="0.3828125" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_face_recognition.xml" value="0.32653985507246375" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_splash.xml" value="0.35260416666666666" />
       </map>

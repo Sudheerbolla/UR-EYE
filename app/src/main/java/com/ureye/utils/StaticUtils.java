@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StaticUtils {
+    public static int SCREEN_HEIGHT = 0;
+    public static int  SCREEN_WIDTH = 0;
 
     public static boolean isPermissionGranted(Context context, String permission) {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;

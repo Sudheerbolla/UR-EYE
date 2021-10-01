@@ -1,36 +1,48 @@
 package com.ureye.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
-import android.util.Log;
-import android.view.MotionEvent;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.databinding.DataBindingUtil;
 
 import com.ureye.BaseApplication;
 import com.ureye.R;
+import com.ureye.databinding.ActivityMainBinding;
 import com.ureye.interfaces.TextToSpeechListener;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
 
 import java.util.List;
 
-public class MainActivity extends BaseActivity implements RecognitionListener, TextToSpeechListener {
+public class MainActivity extends BaseActivity implements RecognitionListener, TextToSpeechListener, View.OnClickListener {
 
     private static final String TAG = "MainActivity";
     private SpeechRecognizer speechRecognizer;
+    private ActivityMainBinding activityMainBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
     }
 
     @Override
     public void initComponents() {
         checkForPermissions();
+        setListeners();
+    }
+
+    private void setListeners() {
+        activityMainBinding.txtFaceRecognition.setOnClickListener(this);
+        activityMainBinding.txtObjectDetection.setOnClickListener(this);
+        activityMainBinding.txtTextRecognition.setOnClickListener(this);
+        activityMainBinding.txtViewSavedData.setOnClickListener(this);
+        activityMainBinding.rootLayout.setOnClickListener(this);
     }
 
     private void checkForPermissions() {
@@ -71,13 +83,17 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         checkForPermissions();
     }
-
+/*
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Log.e(TAG, "User Touched screen, Open voice to text");
-        BaseApplication.getInstance().getTextToSpeechClient(this, "Starting voice recognizer", this);
+        switch (ev.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_UP:
+                BaseApplication.getInstance().getTextToSpeechClient(this, "Starting voice recognizer", this);
+                return true;
+        }
         return super.dispatchTouchEvent(ev);
-    }
+    }*/
 
     @Override
     public void onReadyForSpeech(Bundle params) {
@@ -137,6 +153,49 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
     @Override
     public void completedSpeaking() {
 //        speechRecognizer.startListening();
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.txtFaceRecognition:
+//                v.getParent().requestDisallowInterceptTouchEvent(true);
+                openFaceDetection();
+                break;
+            case R.id.txtObjectDetection:
+//                v.getParent().requestDisallowInterceptTouchEvent(true);
+                openObjectDetection();
+                break;
+            case R.id.txtTextRecognition:
+//                v.getParent().requestDisallowInterceptTouchEvent(true);
+                openTextDetection();
+                break;
+            case R.id.txtViewSavedData:
+//                v.getParent().requestDisallowInterceptTouchEvent(true);
+                openSavedDataScreen();
+                break;
+            case R.id.rootLayout:
+                BaseApplication.getInstance().getTextToSpeechClient(this, "Starting voice recognizer", this);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void openFaceDetection() {
+        startActivity(new Intent(this, FaceRecognitionActivity.class));
+    }
+
+    private void openSavedDataScreen() {
+        StaticUtils.showToast(this, getString(R.string.module_under_development));
+    }
+
+    private void openTextDetection() {
+        StaticUtils.showToast(this, getString(R.string.module_under_development));
+    }
+
+    private void openObjectDetection() {
+        StaticUtils.showToast(this, getString(R.string.module_under_development));
     }
 
 }

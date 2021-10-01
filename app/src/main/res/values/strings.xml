@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">UREYE</string>
+    <string name="detect_objects">Detect Objects</string>
+    <string name="text_recognition">Text Recognition</string>
+    <string name="face_recognition">Face Recognition</string>
+    <string name="view_saved_data">View Saved Data</string>
+    <string name="module_under_development">Module Under Development</string>
 </resources>
