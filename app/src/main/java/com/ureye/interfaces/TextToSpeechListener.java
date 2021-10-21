@@ -8,4 +8,6 @@ public interface TextToSpeechListener {
 
     void completedSpeaking();
 
+    void onStartTTS();
+
 }

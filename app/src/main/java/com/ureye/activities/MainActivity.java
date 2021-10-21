@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -17,12 +19,14 @@ import com.ureye.interfaces.TextToSpeechListener;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends BaseActivity implements RecognitionListener, TextToSpeechListener, View.OnClickListener {
 
     private static final String TAG = "MainActivity";
     private SpeechRecognizer speechRecognizer;
+    private TextToSpeech textToSpeech;
     private ActivityMainBinding activityMainBinding;
 
     @Override
@@ -52,15 +56,17 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
                 ActivityCompat.requestPermissions(this, allNeededPermissions.toArray(new String[0]), Constants.PERMISSION_REQUESTS);
             }
         } else {
-            setUpVoiceRecognition();
+            if (SpeechRecognizer.isRecognitionAvailable(this))
+                setUpVoiceRecognition();
+            textToSpeech = BaseApplication.getInstance().getTextToSpeechClient(this, this);
         }
     }
 
     private void setUpVoiceRecognition() {
-        speechRecognizer = BaseApplication.getVoiceRecognizer(this);
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         if (speechRecognizer == null)
             StaticUtils.showToast(this, "No Speech Recognizer is available. Please install it in device with Speech Recognition available");
-        speechRecognizer.setRecognitionListener(this);
+        else speechRecognizer.setRecognitionListener(this);
     }
 
     private boolean allPermissionsGranted() {
@@ -83,26 +89,13 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         checkForPermissions();
     }
-/*
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        Log.e(TAG, "User Touched screen, Open voice to text");
-        switch (ev.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_UP:
-                BaseApplication.getInstance().getTextToSpeechClient(this, "Starting voice recognizer", this);
-                return true;
-        }
-        return super.dispatchTouchEvent(ev);
-    }*/
 
     @Override
     public void onReadyForSpeech(Bundle params) {
-
     }
 
     @Override
     public void onBeginningOfSpeech() {
-
     }
 
     @Override
@@ -117,22 +110,59 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
 
     @Override
     public void onEndOfSpeech() {
-
     }
 
     @Override
     public void onError(int error) {
-
+        String message;
+        switch (error) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                message = "Audio error";
+                break;
+            case SpeechRecognizer.ERROR_CLIENT:
+                message = "Client error";
+                break;
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                message = "Insufficient permissions";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK:
+                message = "Network error";
+                break;
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                message = "Network timeout";
+                break;
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                message = "No match";
+                break;
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                message = "Speech Recognizer is busy";
+                break;
+            case SpeechRecognizer.ERROR_SERVER:
+                message = "Server error";
+                break;
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                message = "No speech input";
+                break;
+            default:
+                message = "Speech Recognizer cannot understand you";
+                break;
+        }
+        Log.e(TAG, "onError: " + message);
     }
 
     @Override
     public void onResults(Bundle results) {
-
+        ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        String res = "";
+        for (String line : data) {
+            res += line;
+        }
+        Log.e(TAG, "results: " + res);
     }
 
     @Override
     public void onPartialResults(Bundle partialResults) {
-
+        Log.e(TAG, "partialResults: " + partialResults);
     }
 
     @Override
@@ -141,8 +171,13 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
     }
 
     @Override
-    public void proceedSpeaking(String data) {
+    public void onStartTTS() {
 
+    }
+
+    @Override
+    public void proceedSpeaking(String data) {
+        Log.e(TAG, "proceedSpeaking: " + data);
     }
 
     @Override
@@ -152,30 +187,34 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
 
     @Override
     public void completedSpeaking() {
-//        speechRecognizer.startListening();
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+//            textToSpeech.shutdown();
+        }
+        startListening();
+    }
+
+    public void startListening() {
+        runOnUiThread(() -> speechRecognizer.startListening(BaseApplication.getSpeechRecognizerIntent()));
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.txtFaceRecognition:
-//                v.getParent().requestDisallowInterceptTouchEvent(true);
                 openFaceDetection();
                 break;
             case R.id.txtObjectDetection:
-//                v.getParent().requestDisallowInterceptTouchEvent(true);
                 openObjectDetection();
                 break;
             case R.id.txtTextRecognition:
-//                v.getParent().requestDisallowInterceptTouchEvent(true);
                 openTextDetection();
                 break;
             case R.id.txtViewSavedData:
-//                v.getParent().requestDisallowInterceptTouchEvent(true);
                 openSavedDataScreen();
                 break;
             case R.id.rootLayout:
-                BaseApplication.getInstance().getTextToSpeechClient(this, "Starting voice recognizer", this);
+                BaseApplication.getInstance().runTextToSpeech("Starting voice recognizer");
                 break;
             default:
                 break;
@@ -191,11 +230,11 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
     }
 
     private void openTextDetection() {
-        StaticUtils.showToast(this, getString(R.string.module_under_development));
+        startActivity(new Intent(this, TextRecognitionActivity.class));
     }
 
     private void openObjectDetection() {
-        StaticUtils.showToast(this, getString(R.string.module_under_development));
+        startActivity(new Intent(this, ObjectDetectionActivity.class));
     }
 
 }

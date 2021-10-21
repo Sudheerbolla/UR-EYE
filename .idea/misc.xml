@@ -5,9 +5,17 @@
       <map>
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/drawable/ic_button_bg.xml" value="0.3828125" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/drawable/ic_cam_switch.xml" value="0.3828125" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_camera_detection.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_face_recognition.xml" value="0.32653985507246375" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_object_detection.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_splash.xml" value="0.35260416666666666" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_text_recognition.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_vision_camerax_live_preview.xml" value="0.3901760889712697" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/activity_vision_cameraxsource_demo.xml" value="0.3790546802594995" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/layout/spinner_style.xml" value="0.30932971014492755" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.3828125" />
+        <entry key="..\:/Users/webdev1/Documents/DevSudheer/Pers/Sem6/FinalProject/UREYE/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.3828125" />
       </map>
     </option>
   </component>

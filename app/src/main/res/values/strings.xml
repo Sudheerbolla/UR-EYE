@@ -5,4 +5,5 @@
     <string name="face_recognition">Face Recognition</string>
     <string name="view_saved_data">View Saved Data</string>
     <string name="module_under_development">Module Under Development</string>
+    <string name="welcome_to_ur_eye">Welcome to UR-Eye</string>
 </resources>

@@ -19,7 +19,7 @@ public class SplashActivity extends BaseActivity {
         new Handler().postDelayed(() -> {
             startActivity(new Intent(SplashActivity.this, MainActivity.class));
             finishAffinity();
-        }, 1500);
+        }, 1000);
     }
 
 }
