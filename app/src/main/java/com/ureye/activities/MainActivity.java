@@ -2,9 +2,9 @@ package com.ureye.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 
@@ -16,13 +16,13 @@ import com.ureye.BaseApplication;
 import com.ureye.R;
 import com.ureye.databinding.ActivityMainBinding;
 import com.ureye.interfaces.TextToSpeechListener;
+import com.ureye.interfaces.VoiceRecognisationListener;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends BaseActivity implements RecognitionListener, TextToSpeechListener, View.OnClickListener {
+public class MainActivity extends BaseActivity implements TextToSpeechListener, View.OnClickListener, VoiceRecognisationListener {
 
     private static final String TAG = "MainActivity";
     private SpeechRecognizer speechRecognizer;
@@ -50,7 +50,8 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
     }
 
     private void checkForPermissions() {
-        if (!allPermissionsGranted()) {
+        if (!StaticUtils.allPermissionsGranted(this)) {
+            StaticUtils.showToast(this, "Please allow all permissions to open the app functionality");
             List<String> allNeededPermissions = StaticUtils.getRuntimePermissions(this);
             if (!allNeededPermissions.isEmpty()) {
                 ActivityCompat.requestPermissions(this, allNeededPermissions.toArray(new String[0]), Constants.PERMISSION_REQUESTS);
@@ -63,162 +64,9 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
     }
 
     private void setUpVoiceRecognition() {
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
+        speechRecognizer = BaseApplication.getInstance().getVoiceRecognizer(this);
         if (speechRecognizer == null)
             StaticUtils.showToast(this, "No Speech Recognizer is available. Please install it in device with Speech Recognition available");
-        else speechRecognizer.setRecognitionListener(this);
-    }
-
-    private boolean allPermissionsGranted() {
-        for (String permission : StaticUtils.getRequiredPermissions(this)) {
-            if (!StaticUtils.isPermissionGranted(this, permission)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        speechRecognizer.destroy();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        checkForPermissions();
-    }
-
-    @Override
-    public void onReadyForSpeech(Bundle params) {
-    }
-
-    @Override
-    public void onBeginningOfSpeech() {
-    }
-
-    @Override
-    public void onRmsChanged(float rmsdB) {
-
-    }
-
-    @Override
-    public void onBufferReceived(byte[] buffer) {
-
-    }
-
-    @Override
-    public void onEndOfSpeech() {
-    }
-
-    @Override
-    public void onError(int error) {
-        String message;
-        switch (error) {
-            case SpeechRecognizer.ERROR_AUDIO:
-                message = "Audio error";
-                break;
-            case SpeechRecognizer.ERROR_CLIENT:
-                message = "Client error";
-                break;
-            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                message = "Insufficient permissions";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK:
-                message = "Network error";
-                break;
-            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                message = "Network timeout";
-                break;
-            case SpeechRecognizer.ERROR_NO_MATCH:
-                message = "No match";
-                break;
-            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                message = "Speech Recognizer is busy";
-                break;
-            case SpeechRecognizer.ERROR_SERVER:
-                message = "Server error";
-                break;
-            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                message = "No speech input";
-                break;
-            default:
-                message = "Speech Recognizer cannot understand you";
-                break;
-        }
-        Log.e(TAG, "onError: " + message);
-    }
-
-    @Override
-    public void onResults(Bundle results) {
-        ArrayList<String> data = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        String res = "";
-        for (String line : data) {
-            res += line;
-        }
-        Log.e(TAG, "results: " + res);
-    }
-
-    @Override
-    public void onPartialResults(Bundle partialResults) {
-        Log.e(TAG, "partialResults: " + partialResults);
-    }
-
-    @Override
-    public void onEvent(int eventType, Bundle params) {
-
-    }
-
-    @Override
-    public void onStartTTS() {
-
-    }
-
-    @Override
-    public void proceedSpeaking(String data) {
-        Log.e(TAG, "proceedSpeaking: " + data);
-    }
-
-    @Override
-    public void errorDetectingText() {
-
-    }
-
-    @Override
-    public void completedSpeaking() {
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-//            textToSpeech.shutdown();
-        }
-        startListening();
-    }
-
-    public void startListening() {
-        runOnUiThread(() -> speechRecognizer.startListening(BaseApplication.getSpeechRecognizerIntent()));
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.txtFaceRecognition:
-                openFaceDetection();
-                break;
-            case R.id.txtObjectDetection:
-                openObjectDetection();
-                break;
-            case R.id.txtTextRecognition:
-                openTextDetection();
-                break;
-            case R.id.txtViewSavedData:
-                openSavedDataScreen();
-                break;
-            case R.id.rootLayout:
-                BaseApplication.getInstance().runTextToSpeech("Starting voice recognizer");
-                break;
-            default:
-                break;
-        }
     }
 
     private void openFaceDetection() {
@@ -235,6 +83,124 @@ public class MainActivity extends BaseActivity implements RecognitionListener, T
 
     private void openObjectDetection() {
         startActivity(new Intent(this, ObjectDetectionActivity.class));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        speechRecognizer.destroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        checkForPermissions();
+    }
+
+    @Override
+    public void onStartTTS() {
+
+    }
+
+    @Override
+    public void proceedSpeaking(String data) {
+//        Log.e(TAG, "proceedSpeaking: " + data);
+    }
+
+    @Override
+    public void errorDetectingText() {
+
+    }
+
+    @Override
+    public void completedSpeaking() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+//            textToSpeech.shutdown();
+        }
+        BaseApplication.getInstance().startListening(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (StaticUtils.allPermissionsGranted(this))
+            switch (v.getId()) {
+                case R.id.txtFaceRecognition:
+                    openFaceDetection();
+                    break;
+                case R.id.txtObjectDetection:
+                    openObjectDetection();
+                    break;
+                case R.id.txtTextRecognition:
+                    openTextDetection();
+                    break;
+                case R.id.txtViewSavedData:
+                    openSavedDataScreen();
+                    break;
+                case R.id.rootLayout:
+                    BaseApplication.getInstance().runTextToSpeech("Starting voice recognizer");
+                    break;
+                default:
+                    break;
+            }
+        else {
+            checkForPermissions();
+        }
+    }
+
+
+    /**
+     * These are callbacks of voice to text
+     */
+    @Override
+    public void startListening() {
+
+    }
+
+    @Override
+    public void errorDetecting(String message, int errorCode) {
+
+    }
+
+    @Override
+    public void completedListening(String data) {
+        Log.e(TAG, "voice data from user: " + data);
+        if (!TextUtils.isEmpty(data)) {
+            switch (StaticUtils.getCatFromSpeech(data)) {
+                case Constants.SELECTION_GENERAL_CATEGORY:
+                    performAppropriateAction(data);
+                    break;
+                case Constants.SELECTION_CATEGORY_OBJECT:
+                    activityMainBinding.txtObjectDetection.callOnClick();
+                    break;
+                case Constants.SELECTION_CATEGORY_TEXT:
+                    activityMainBinding.txtTextRecognition.callOnClick();
+                    break;
+                case Constants.SELECTION_CATEGORY_FACE:
+                    activityMainBinding.txtFaceRecognition.callOnClick();
+                    break;
+                case Constants.SELECTION_CATEGORY_SAVED:
+                    activityMainBinding.txtViewSavedData.callOnClick();
+                    break;
+                default:
+                    activityMainBinding.rootLayout.callOnClick();
+                    break;
+            }
+        }
+    }
+
+    private void performAppropriateAction(String data) {
+        if (data.contains("quit") || data.contains("close") || data.contains("stop"))
+            finishAffinity();
+        else if (data.contains("apphelp")) {
+//            We will show app help or guide
+        } else if (data.contains("help") || data.contains("emergency")) {
+            StaticUtils.showToast(this, R.string.emergency_alert);
+            BaseApplication.getInstance().stopListening(this);
+            BaseApplication.getInstance().runTextToSpeech(getString(R.string.emergency_alert));
+        } else if (data.contains("back")) {
+            onBackPressed();
+        }
     }
 
 }

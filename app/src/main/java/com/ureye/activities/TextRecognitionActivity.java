@@ -1,25 +1,19 @@
 package com.ureye.activities;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
+import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory;
 
@@ -27,27 +21,19 @@ import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.common.MlKitException;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import com.ureye.R;
+import com.ureye.databinding.ActivityCameraDetectionBinding;
+import com.ureye.utils.Constants;
+import com.ureye.utils.StaticUtils;
 import com.ureye.utils.camerautils.CameraXViewModel;
-import com.ureye.utils.common.GraphicOverlay;
 import com.ureye.utils.common.VisionImageProcessor;
 import com.ureye.utils.textrecognition.TextRecognitionProcessor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @KeepName
 @RequiresApi(VERSION_CODES.LOLLIPOP)
-public final class TextRecognitionActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
+public final class TextRecognitionActivity extends BaseActivity implements OnRequestPermissionsResultCallback {
     private static final String TAG = "CameraXLivePreview";
     private static final int PERMISSION_REQUESTS = 1;
-
-    private static final String TEXT_RECOGNITION_LATIN = "Text Recognition Latin";
-
-    private static final String STATE_SELECTED_MODEL = "selected_model";
-
-    private PreviewView previewView;
-    private GraphicOverlay graphicOverlay;
-
+    private ActivityCameraDetectionBinding cameraDetectionBinding;
     @Nullable
     private ProcessCameraProvider cameraProvider;
     @Nullable
@@ -58,29 +44,17 @@ public final class TextRecognitionActivity extends AppCompatActivity implements 
     private VisionImageProcessor imageProcessor;
     private boolean needUpdateGraphicOverlayImageSourceInfo;
 
-    private String selectedModel = TEXT_RECOGNITION_LATIN;
-    private int lensFacing = CameraSelector.LENS_FACING_BACK;
     private CameraSelector cameraSelector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate");
+        cameraDetectionBinding = DataBindingUtil.setContentView(this, R.layout.activity_camera_detection);
+    }
 
-        if (savedInstanceState != null) {
-            selectedModel = savedInstanceState.getString(STATE_SELECTED_MODEL, TEXT_RECOGNITION_LATIN);
-        }
-        cameraSelector = new CameraSelector.Builder().requireLensFacing(lensFacing).build();
-
-        setContentView(R.layout.activity_camera_detection);
-        previewView = findViewById(R.id.preview_view);
-        if (previewView == null) {
-            Log.d(TAG, "previewView is null");
-        }
-        graphicOverlay = findViewById(R.id.graphic_overlay);
-        if (graphicOverlay == null) {
-            Log.d(TAG, "graphicOverlay is null");
-        }
+    @Override
+    public void initComponents() {
+        cameraSelector = new CameraSelector.Builder().requireLensFacing(Constants.CAM_FACE).build();
 
         new ViewModelProvider(this, AndroidViewModelFactory.getInstance(getApplication()))
                 .get(CameraXViewModel.class)
@@ -88,20 +62,14 @@ public final class TextRecognitionActivity extends AppCompatActivity implements 
                 .observe(this,
                         provider -> {
                             cameraProvider = provider;
-                            if (allPermissionsGranted()) {
+                            if (StaticUtils.allPermissionsGranted(this)) {
                                 bindAllCameraUseCases();
                             }
                         });
 
-        if (!allPermissionsGranted()) {
-            getRuntimePermissions();
-        }
-    }
+        if (!StaticUtils.allPermissionsGranted(this))
+            ActivityCompat.requestPermissions(this, StaticUtils.getRuntimePermissions(this).toArray(new String[0]), PERMISSION_REQUESTS);
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle bundle) {
-        super.onSaveInstanceState(bundle);
-        bundle.putString(STATE_SELECTED_MODEL, selectedModel);
     }
 
     @Override
@@ -151,7 +119,7 @@ public final class TextRecognitionActivity extends AppCompatActivity implements 
             builder.setTargetResolution(targetResolution);
         }*/
         previewUseCase = builder.build();
-        previewUseCase.setSurfaceProvider(previewView.getSurfaceProvider());
+        previewUseCase.setSurfaceProvider(cameraDetectionBinding.previewView.getSurfaceProvider());
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
     }
 
@@ -169,12 +137,8 @@ public final class TextRecognitionActivity extends AppCompatActivity implements 
         try {
             imageProcessor = new TextRecognitionProcessor(this, new TextRecognizerOptions.Builder().build());
         } catch (Exception e) {
-            Log.e(TAG, "Can not create image processor: " + selectedModel, e);
-            Toast.makeText(
-                    getApplicationContext(),
-                    "Can not create image processor: " + e.getLocalizedMessage(),
-                    Toast.LENGTH_LONG)
-                    .show();
+            Log.e(TAG, "Can not create image processor for Text Recog Latin: ", e);
+            StaticUtils.showToast(this, "Can not create image processor: " + e.getLocalizedMessage());
             return;
         }
 
@@ -192,78 +156,31 @@ public final class TextRecognitionActivity extends AppCompatActivity implements 
                 ContextCompat.getMainExecutor(this),
                 imageProxy -> {
                     if (needUpdateGraphicOverlayImageSourceInfo) {
-                        boolean isImageFlipped = lensFacing == CameraSelector.LENS_FACING_FRONT;
+                        boolean isImageFlipped = Constants.CAM_FACE == CameraSelector.LENS_FACING_FRONT;
                         int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
                         if (rotationDegrees == 0 || rotationDegrees == 180) {
-                            graphicOverlay.setImageSourceInfo(imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
+                            cameraDetectionBinding.graphicOverlay.setImageSourceInfo(imageProxy.getWidth(), imageProxy.getHeight(), isImageFlipped);
                         } else {
-                            graphicOverlay.setImageSourceInfo(imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
+                            cameraDetectionBinding.graphicOverlay.setImageSourceInfo(imageProxy.getHeight(), imageProxy.getWidth(), isImageFlipped);
                         }
                         needUpdateGraphicOverlayImageSourceInfo = false;
                     }
                     try {
-                        imageProcessor.processImageProxy(imageProxy, graphicOverlay);
+                        imageProcessor.processImageProxy(imageProxy, cameraDetectionBinding.graphicOverlay);
                     } catch (MlKitException e) {
-                        Log.e(TAG, "Failed to process image. Error: " + e.getLocalizedMessage());
-                        Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_SHORT)
-                                .show();
+                        StaticUtils.showToast(this, e.getLocalizedMessage());
                     }
                 });
 
         cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
     }
 
-    private String[] getRequiredPermissions() {
-        try {
-            PackageInfo info = this.getPackageManager().getPackageInfo(this.getPackageName(), PackageManager.GET_PERMISSIONS);
-            String[] ps = info.requestedPermissions;
-            if (ps != null && ps.length > 0) {
-                return ps;
-            } else {
-                return new String[0];
-            }
-        } catch (Exception e) {
-            return new String[0];
-        }
-    }
-
-    private boolean allPermissionsGranted() {
-        for (String permission : getRequiredPermissions()) {
-            if (!isPermissionGranted(this, permission)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void getRuntimePermissions() {
-        List<String> allNeededPermissions = new ArrayList<>();
-        for (String permission : getRequiredPermissions()) {
-            if (!isPermissionGranted(this, permission)) {
-                allNeededPermissions.add(permission);
-            }
-        }
-
-        if (!allNeededPermissions.isEmpty()) {
-            ActivityCompat.requestPermissions(this, allNeededPermissions.toArray(new String[0]), PERMISSION_REQUESTS);
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        Log.i(TAG, "Permission granted!");
-        if (allPermissionsGranted()) {
+        if (StaticUtils.allPermissionsGranted(this)) {
             bindAllCameraUseCases();
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    private static boolean isPermissionGranted(Context context, String permission) {
-        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission granted: " + permission);
-            return true;
-        }
-        Log.i(TAG, "Permission NOT granted: " + permission);
-        return false;
-    }
 }

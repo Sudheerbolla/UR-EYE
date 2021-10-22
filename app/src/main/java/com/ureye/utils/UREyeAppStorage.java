@@ -3,7 +3,14 @@ package com.ureye.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.ureye.BuildConfig;
+import com.ureye.utils.facerecognition.SimilarityClassifier;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UREyeAppStorage {
 
@@ -43,6 +50,34 @@ public class UREyeAppStorage {
     public void setValue(String key, String value) {
         mSharedPreferencesEditor.putString(key, value);
         mSharedPreferencesEditor.commit();
+    }
+
+    //Save Faces to Shared Preferences.Json String from Recognition object
+    public void insertFacesToSP(HashMap<String, SimilarityClassifier.Recognition> jsonMap, boolean clear) {
+        if (clear) jsonMap.clear();
+        else jsonMap.putAll(readSavedFacesFromSP());
+        setValue(SP_FACES_STORED, new Gson().toJson(jsonMap));
+    }
+
+    //Load Faces from Shared Preferences.Json String to Recognition object
+    public HashMap<String, SimilarityClassifier.Recognition> readSavedFacesFromSP() {
+        String defValue = new Gson().toJson(new HashMap<String, SimilarityClassifier.Recognition>());
+        String json = getValue(SP_FACES_STORED, defValue);
+        TypeToken<HashMap<String, SimilarityClassifier.Recognition>> token = new TypeToken<HashMap<String, SimilarityClassifier.Recognition>>() {
+        };
+        HashMap<String, SimilarityClassifier.Recognition> retrievedMap = new Gson().fromJson(json, token.getType());
+        //During type conversion and save/load procedure,format changes(eg float converted to double).
+        //So embeddings need to be extracted from it in required format(eg.double to float).
+        for (Map.Entry<String, SimilarityClassifier.Recognition> entry : retrievedMap.entrySet()) {
+            float[][] output = new float[1][Constants.OUTPUT_SIZE];
+            ArrayList arrayList = (ArrayList) entry.getValue().getExtra();
+            arrayList = (ArrayList) arrayList.get(0);
+            for (int counter = 0; counter < arrayList.size(); counter++) {
+                output[0][counter] = ((Double) arrayList.get(counter)).floatValue();
+            }
+            entry.getValue().setExtra(output);
+        }
+        return retrievedMap;
     }
 
     /**

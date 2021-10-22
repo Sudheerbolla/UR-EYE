@@ -4,8 +4,8 @@ public interface VoiceRecognisationListener {
 
     void startListening();
 
-    void errorDetecting();
+    void errorDetecting(String message, int errorCode);
 
-    void completedListening();
+    void completedListening(String data);
 
 }

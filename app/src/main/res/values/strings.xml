@@ -6,4 +6,6 @@
     <string name="view_saved_data">View Saved Data</string>
     <string name="module_under_development">Module Under Development</string>
     <string name="welcome_to_ur_eye">Welcome to UR-Eye</string>
+    <string name="add_face">Add Face</string>
+    <string name="emergency_alert">Calling Emergency Contact and 911</string>
 </resources>
