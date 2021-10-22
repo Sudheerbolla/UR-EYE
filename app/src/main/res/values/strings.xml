@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">UREYE</string>
+    <string name="app_name">UR Eye</string>
     <string name="detect_objects">Detect Objects</string>
     <string name="text_recognition">Text Recognition</string>
     <string name="face_recognition">Face Recognition</string>

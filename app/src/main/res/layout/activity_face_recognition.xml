@@ -8,23 +8,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/actions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_button_bg"
-            android:text="ACTIONS"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/face_preview"
-            app:layout_constraintVertical_bias="0.25" />
-
         <FrameLayout
             android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/three_hundred_dp"
+            android:layout_height="match_parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,9 +21,7 @@
             <androidx.camera.view.PreviewView
                 android:id="@+id/previewView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </androidx.camera.view.PreviewView>
+                android:layout_height="match_parent" />
 
         </FrameLayout>
 
@@ -44,8 +29,6 @@
             android:id="@+id/add_face"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="164dp"
-            android:layout_marginBottom="168dp"
             android:elevation="2dp"
             app:layout_constraintBottom_toBottomOf="@+id/face_preview"
             app:layout_constraintStart_toStartOf="@+id/face_preview"
@@ -53,45 +36,34 @@
 
         <ImageView
             android:id="@+id/face_preview"
-            android:layout_width="203dp"
-            android:layout_height="200dp"
+            android:layout_width="153dp"
+            android:layout_height="150dp"
+            android:layout_margin="@dimen/fifteen_dp"
             android:background="#2C7E57C2"
             android:elevation="1dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/container"
-            app:layout_constraintVertical_bias="0.435"
+            app:layout_constraintTop_toTopOf="parent"
             tools:srcCompat="@android:drawable/screen_background_light_transparent" />
 
-        <LinearLayout
+        <!--<Button
+            android:id="@+id/recognize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
+            android:layout_margin="15dp"
+            android:background="@drawable/ic_button_bg"
+            android:rotation="0"
+            android:rotationX="0"
+            android:rotationY="0"
+            android:text="@string/add_face"
+            android:textAlignment="center"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/container">
-
-            <Button
-                android:id="@+id/recognize"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_button_bg"
-                android:rotation="0"
-                android:rotationX="0"
-                android:rotationY="0"
-                android:text="@string/add_face"
-                android:textAlignment="center"
-                android:visibility="visible"
-                tools:visibility="visible" />
-
-        </LinearLayout>
+            app:layout_constraintTop_toBottomOf="@+id/face_preview"
+            tools:visibility="gone" />-->
 
         <TextView
             android:id="@+id/reco_name"
-            android:layout_width="164dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="@string/add_face"
             android:textAlignment="center"

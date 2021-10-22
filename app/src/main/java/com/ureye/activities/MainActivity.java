@@ -78,7 +78,7 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
     }
 
     private void openTextDetection() {
-        startActivity(new Intent(this, TextRecognitionActivity.class));
+        StaticUtils.showToast(this, getString(R.string.module_under_development));
     }
 
     private void openObjectDetection() {

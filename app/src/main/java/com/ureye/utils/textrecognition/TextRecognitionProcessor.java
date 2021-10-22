@@ -31,6 +31,7 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.TextRecognizerOptionsInterface;
 import com.ureye.utils.common.GraphicOverlay;
+import com.ureye.utils.common.VisionProcessorBase;
 
 import java.util.List;
 

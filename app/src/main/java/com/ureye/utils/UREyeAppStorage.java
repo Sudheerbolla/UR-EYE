@@ -53,9 +53,10 @@ public class UREyeAppStorage {
     }
 
     //Save Faces to Shared Preferences.Json String from Recognition object
-    public void insertFacesToSP(HashMap<String, SimilarityClassifier.Recognition> jsonMap, boolean clear) {
-        if (clear) jsonMap.clear();
-        else jsonMap.putAll(readSavedFacesFromSP());
+    public void insertFacesToSP(HashMap<String, SimilarityClassifier.Recognition> jsonMap/*, boolean clear*/) {
+        /*if (clear) jsonMap.clear();
+        else */
+        jsonMap.putAll(readSavedFacesFromSP());
         setValue(SP_FACES_STORED, new Gson().toJson(jsonMap));
     }
 

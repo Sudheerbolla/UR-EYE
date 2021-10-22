@@ -6,57 +6,56 @@
         android:id="@+id/rootLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorGreySep"
-        android:gravity="center"
+        android:layout_margin="@dimen/ten_dp"
+        android:background="@color/white"
         android:orientation="vertical"
-        android:padding="@dimen/ten_dp"
+        android:padding="@dimen/twenty_dp"
         tools:context=".activities.MainActivity">
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/fifteen_dp"
+            android:drawableTop="@mipmap/ic_launcher"
+            android:drawablePadding="@dimen/seven_dp"
+            android:text="@string/app_name"
+            android:textColor="@color/colorText"
+            android:textSize="@dimen/twenty_two_sp" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/txtObjectDetection"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/thirty_five_dp"
             android:background="@drawable/ic_button_bg"
-            android:minWidth="@dimen/one_seventy_five_dp"
-            android:paddingStart="@dimen/fifteen_dp"
-            android:paddingEnd="@dimen/fifteen_dp"
             android:text="@string/detect_objects"
             android:textColor="@color/white" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/txtTextRecognition"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/twenty_dp"
             android:background="@drawable/ic_button_bg"
-            android:minWidth="@dimen/one_seventy_five_dp"
-            android:paddingStart="@dimen/fifteen_dp"
-            android:paddingEnd="@dimen/fifteen_dp"
             android:text="@string/text_recognition"
             android:textColor="@color/white" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/txtFaceRecognition"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/twenty_dp"
             android:background="@drawable/ic_button_bg"
-            android:minWidth="@dimen/one_seventy_five_dp"
-            android:paddingStart="@dimen/fifteen_dp"
-            android:paddingEnd="@dimen/fifteen_dp"
             android:text="@string/face_recognition"
             android:textColor="@color/white" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/txtViewSavedData"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/twenty_dp"
             android:background="@drawable/ic_button_bg"
-            android:minWidth="@dimen/one_seventy_five_dp"
-            android:paddingStart="@dimen/fifteen_dp"
-            android:paddingEnd="@dimen/fifteen_dp"
             android:text="@string/view_saved_data"
             android:textColor="@color/white" />
 

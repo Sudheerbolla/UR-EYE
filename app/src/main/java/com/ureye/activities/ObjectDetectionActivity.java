@@ -1,7 +1,6 @@
 package com.ureye.activities;
 
 import android.annotation.SuppressLint;
-import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +24,6 @@ import com.ureye.R;
 import com.ureye.databinding.ActivityCameraDetectionBinding;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
-import com.ureye.utils.common.InferenceInfoGraphic;
 import com.ureye.utils.objectdetector.ObjectGraphic;
 
 import java.util.List;
@@ -115,10 +113,8 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
         if (needUpdateGraphicOverlayImageSourceInfo) {
             Size size = cameraXSource.getPreviewSize();
             if (size != null) {
-                Log.d(TAG, "preview width: " + size.getWidth());
-                Log.d(TAG, "preview height: " + size.getHeight());
                 boolean isImageFlipped = cameraXSource.getCameraFacing() == CameraSourceConfig.CAMERA_FACING_FRONT;
-                if (isPortraitMode()) {
+                if (StaticUtils.isPortraitMode(this)) {
                     cameraDetectionBinding.graphicOverlay.setImageSourceInfo(size.getHeight(), size.getWidth(), isImageFlipped);
                 } else {
                     cameraDetectionBinding.graphicOverlay.setImageSourceInfo(size.getWidth(), size.getHeight(), isImageFlipped);
@@ -131,7 +127,7 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
         for (DetectedObject object : results) {
             cameraDetectionBinding.graphicOverlay.add(new ObjectGraphic(cameraDetectionBinding.graphicOverlay, object));
         }
-        cameraDetectionBinding.graphicOverlay.add(new InferenceInfoGraphic(cameraDetectionBinding.graphicOverlay));
+//        cameraDetectionBinding.graphicOverlay.add(new InferenceInfoGraphic(cameraDetectionBinding.graphicOverlay));
         cameraDetectionBinding.graphicOverlay.postInvalidate();
     }
 
@@ -141,10 +137,6 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
         String error = "Failed to process. Error: " + e.getLocalizedMessage();
         StaticUtils.showToast(this, error + "\nCause: " + e.getCause());
         Log.d(TAG, error);
-    }
-
-    private boolean isPortraitMode() {
-        return getApplicationContext().getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
     }
 
 }

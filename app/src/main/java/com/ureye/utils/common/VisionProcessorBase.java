@@ -1,20 +1,4 @@
-/*
- * Copyright 2020 Google LLC. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.ureye.utils.textrecognition;
+package com.ureye.utils.common;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -44,14 +28,7 @@ import com.google.android.odml.image.MediaMlImageBuilder;
 import com.google.android.odml.image.MlImage;
 import com.google.mlkit.common.MlKitException;
 import com.google.mlkit.vision.common.InputImage;
-import com.ureye.utils.common.BitmapUtils;
 import com.ureye.utils.camerautils.CameraImageGraphic;
-import com.ureye.utils.common.FrameMetadata;
-import com.ureye.utils.common.GraphicOverlay;
-import com.ureye.utils.common.InferenceInfoGraphic;
-import com.ureye.utils.common.ScopedExecutor;
-import com.ureye.utils.common.TemperatureMonitor;
-import com.ureye.utils.common.VisionImageProcessor;
 
 import java.nio.ByteBuffer;
 import java.util.Timer;
