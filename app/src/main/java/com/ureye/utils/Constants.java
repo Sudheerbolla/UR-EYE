@@ -26,6 +26,6 @@ public class Constants {
     public static final String[] TEXT_DETECTION_KEYWORDS = new String[]{"two", "2", "to", "text", "label", "heading", "reader"};
     public static final String[] FACE_DETECTION_KEYWORDS = new String[]{"three", "3", "face", "friends", "people", "meeting"};
     public static final String[] SAVED_DETECTION_KEYWORDS = new String[]{"four", "4", "localdata", "saved", "mydata", "data"};
-    public static final String[] GENERIC_KEYWORDS = new String[]{"close", "stop", "back", "apphelp", "help", "emergency", "quit", "location","place"};
+    public static final String[] GENERIC_KEYWORDS = new String[]{"close", "stop", "back", "apphelp", "help", "emergency", "quit", "location", "place"};
 
 }

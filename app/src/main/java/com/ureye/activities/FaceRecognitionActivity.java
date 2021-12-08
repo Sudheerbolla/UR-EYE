@@ -70,7 +70,7 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     private HashMap<String, SimilarityClassifier.Recognition> savedFacesList;
     private ActivityFaceRecognitionBinding activityFaceRecognitionBinding;
     private UREyeAppStorage urEyeAppStorage;
-    private boolean isAddFaceActive;
+    private boolean isAddFaceActive = false;
     private SpeechRecognizer speechRecognizer;
     private Location currentLocation;
     private LocationManager mLocationManager;
@@ -110,6 +110,7 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     }
 
     private void setUpVoiceRecognition() {
+        BaseApplication.getInstance().stopVoiceRecognizer();
         speechRecognizer = BaseApplication.getInstance().getVoiceRecognizer(this);
         if (speechRecognizer == null)
             StaticUtils.showToast(this, "No Speech Recognizer is available. Please install it in device with Speech Recognition available");
@@ -118,8 +119,13 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        speechRecognizer.destroy();
-        BaseApplication.getInstance().stopSpeaking();
+        try {
+            speechRecognizer.destroy();
+            BaseApplication.getInstance().stopSpeaking();
+            BaseApplication.getInstance().stopVoiceRecognizer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -210,8 +216,7 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
                                 //Scale the acquired Face to 112*112 which is required input for model
                                 Bitmap scaled = BitmapUtils.getResizedBitmap(croppedFace, 112, 112);
 
-                                if (start)
-                                    recognizeImage(scaled);
+                                if (start) recognizeImage(scaled);
                                 try {
                                     Thread.sleep(20);  //Camera preview refreshed every 20 millisec(adjust as required)
                                 } catch (InterruptedException e) {
@@ -272,22 +277,27 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
                     activityFaceRecognitionBinding.recoName.setText(name);
                     activityFaceRecognitionBinding.addFace.setVisibility(View.INVISIBLE);
                     activityFaceRecognitionBinding.facePreview.setVisibility(View.INVISIBLE);
-                    BaseApplication.getInstance().continuousTextToSpeech("Found " + name);
                     isAddFaceActive = false;
+                    BaseApplication.getInstance().continuousTextToSpeech("Found " + name);
                 } else {
                     activityFaceRecognitionBinding.recoName.setText("Unknown");
                     activityFaceRecognitionBinding.addFace.setVisibility(View.VISIBLE);
                     activityFaceRecognitionBinding.facePreview.setVisibility(View.VISIBLE);
-                    BaseApplication.getInstance().continuousTextToSpeech(getString(R.string.new_face_found));
-                    isAddFaceActive = true;
+                    runFoundAFaceAlert();
                 }
             }
         } else {
             activityFaceRecognitionBinding.addFace.setVisibility(View.VISIBLE);
             activityFaceRecognitionBinding.facePreview.setVisibility(View.VISIBLE);
             activityFaceRecognitionBinding.recoName.setText("Unknown");
+            runFoundAFaceAlert();
+        }
+    }
+
+    private void runFoundAFaceAlert() {
+        if (!isAddFaceActive) {
+            isAddFaceActive = true;
             BaseApplication.getInstance().continuousTextToSpeech(getString(R.string.new_face_found));
-            isAddFaceActive = false;
         }
     }
 
@@ -321,24 +331,14 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     public void completedListening(String data) {
         Log.e(TAG, "voice data from user: " + data);
         if (!TextUtils.isEmpty(data)) {
-            switch (StaticUtils.getCatFromSpeech(data)) {
-                case Constants.SELECTION_CATEGORY_OBJECT:
-                case Constants.SELECTION_CATEGORY_TEXT:
-                case Constants.SELECTION_CATEGORY_FACE:
-                case Constants.SELECTION_CATEGORY_SAVED:
-                    onBackPressed();
-                    break;
-                default:
-                    performAppropriateAction(data);
-                    break;
-            }
+            performAppropriateAction(data);
         }
     }
 
     private void performAppropriateAction(String data) {
-        if (data.contains("add") || data.contains("yes") || data.contains("ok") || data.contains("okay")) {
+        if (data.contains("add") || data.contains("yes") || data.contains("ok") || data.contains("okay") || data.contains("s")) {
             BaseApplication.getInstance().runTextToSpeech("Please say a name");
-//            addFace();
+            isAddFaceActive = true;
         } else if (data.contains("quit") || data.contains("close") || data.contains("stop"))
             finishAffinity();
         else if (data.contains("apphelp")) {
@@ -353,7 +353,6 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
             onBackPressed();
         } else {
             if (isAddFaceActive) {
-                isAddFaceActive = false;
                 addFaceWithName(data);
             }
         }
@@ -361,13 +360,13 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
 
     private void addFaceWithName(String data) {
         start = false;
-        //Create and Initialize new object with Face embeddings and Name.
         SimilarityClassifier.Recognition result = new SimilarityClassifier.Recognition("0", "", -1f);
         result.setExtra(embeedings);
         savedFacesList.put(data, result);
         start = true;
         urEyeAppStorage.insertFacesToSP(savedFacesList);
-        BaseApplication.getInstance().runTextToSpeech("Added "+data+" to storage");
+        BaseApplication.getInstance().runTextToSpeech("Added " + data + " to storage");
+        isAddFaceActive = false;
     }
 
     private void getCurrentLocation() {

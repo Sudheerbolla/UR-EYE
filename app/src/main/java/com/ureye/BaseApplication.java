@@ -140,7 +140,9 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     public void startListening(BaseActivity activity) {
-        activity.runOnUiThread(() -> speechRecognizer.startListening(speechRecognizerIntent));
+        activity.runOnUiThread(() -> {
+            if (speechRecognizer != null) speechRecognizer.startListening(speechRecognizerIntent);
+        });
     }
 
     private void getSpeechRecognizerIntent() {
@@ -226,6 +228,10 @@ public class BaseApplication extends MultiDexApplication {
 
     public void stopSpeaking() {
         if (textToSpeech != null && textToSpeech.isSpeaking()) textToSpeech.stop();
+    }
+
+    public void stopVoiceRecognizer() {
+        if (speechRecognizer != null) speechRecognizer = null;
     }
 
     public void startHelpNotation() {

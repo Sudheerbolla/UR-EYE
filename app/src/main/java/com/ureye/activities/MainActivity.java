@@ -119,9 +119,26 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        speechRecognizer.destroy();
-        textToSpeech.stop();
+        try {
+            speechRecognizer.destroy();
+            BaseApplication.getInstance().stopVoiceRecognizer();
+            textToSpeech.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+/*
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            if (speechRecognizer != null) speechRecognizer.destroy();
+            BaseApplication.getInstance().stopVoiceRecognizer();
+            if (textToSpeech != null) textToSpeech.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }*/
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -180,7 +197,6 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
         }
     }
 
-
     /**
      * These are callbacks of voice to text
      */
@@ -225,7 +241,7 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
         if (data.contains("quit") || data.contains("close") || data.contains("stop"))
             finishAffinity();
         else if (data.contains("apphelp")) {
-//            We will show app help or guide
+            BaseApplication.getInstance().startHelpNotation();
         } else if (data.contains("location") || data.contains("place")) {
             if (StaticUtils.allPermissionsGranted(this)) {
                 getCurrentLocation();
