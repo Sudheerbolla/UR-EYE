@@ -48,7 +48,7 @@ dependencies {
     implementation "androidx.multidex:multidex:2.0.1"
 
     implementation 'com.google.mlkit:camera:16.0.0-beta1'
-//    implementation 'com.google.mlkit:object-detection:16.2.7'
+
     implementation 'com.google.mlkit:object-detection-custom:16.3.3'
     implementation 'com.google.mlkit:face-detection:16.1.2'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:17.0.0'
@@ -75,10 +75,5 @@ dependencies {
     implementation('org.tensorflow:tensorflow-lite:2.4.0') { changing = true }
     implementation('org.tensorflow:tensorflow-lite-gpu:0.0.0-nightly') { changing = true }
     implementation('org.tensorflow:tensorflow-lite-support:0.1.0') { changing = true }
-
-    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
-
 
 }

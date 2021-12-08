@@ -72,7 +72,7 @@ public class StaticUtils {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(context);
         builderSingle.setTitle("Saved Locations");
 
-        final ArrayAdapter<LocationsModel> arrayAdapter = new ArrayAdapter<>(context, android.R.layout.select_dialog_singlechoice);
+        final ArrayAdapter<LocationsModel> arrayAdapter = new ArrayAdapter<>(context, android.R.layout.select_dialog_item);
         arrayAdapter.addAll(locationsModelArrayList);
 
         builderSingle.setNegativeButton("cancel", (dialog, which) -> dialog.dismiss());

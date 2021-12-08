@@ -87,9 +87,9 @@ public class UREyeAppStorage {
     //Save Locations to Shared Preferences.Json String from Location
     public void insertLocationToSP(LocationsModel locationsModel) {
         ArrayList<LocationsModel> locationsModelArrayList = readSavedLocationsFromSP();
-        if (locationsModelArrayList.contains(locationsModel)) {
-            locationsModelArrayList.remove(locationsModel);
-        }
+//        if (locationsModelArrayList.contains(locationsModel)) {
+//            locationsModelArrayList.remove(locationsModel);
+//        }
         locationsModelArrayList.add(locationsModel);
         setValue(SP_SAVED_LOCATIONS, new Gson().toJson(locationsModelArrayList));
     }
