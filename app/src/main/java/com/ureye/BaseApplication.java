@@ -10,6 +10,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.multidex.MultiDexApplication;
 
 import com.ureye.activities.BaseActivity;
@@ -28,6 +29,7 @@ public class BaseApplication extends MultiDexApplication {
     private static final String TAG = "BaseApplication";
     private Intent speechRecognizerIntent;
     private TextToSpeechListener textToSpeechListener;
+    private AlertDialog alertDialog;
 
     public synchronized static BaseApplication getInstance() {
         if (baseApplication == null) baseApplication = new BaseApplication();
@@ -184,6 +186,7 @@ public class BaseApplication extends MultiDexApplication {
                         if (textToSpeechListener != null) {
                             textToSpeechListener.completedSpeaking();
                         }
+                        if (alertDialog != null && alertDialog.isShowing()) alertDialog.cancel();
                     }
 
                     @Override
@@ -234,7 +237,19 @@ public class BaseApplication extends MultiDexApplication {
         if (speechRecognizer != null) speechRecognizer = null;
     }
 
-    public void startHelpNotation() {
+    public void startHelpNotation(BaseActivity context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Enter Name");
+        builder.setMessage(R.string.app_help_intro);
+        builder.setPositiveButton("Skip", (dialog, which) -> {
+            if (textToSpeech.isSpeaking()) {
+                textToSpeech.stop();
+                if (textToSpeechListener != null) {
+                    textToSpeechListener.completedSpeaking();
+                }
+            }
+        });
+        alertDialog = builder.show();
         runTextToSpeech(getString(R.string.app_help_intro));
     }
 

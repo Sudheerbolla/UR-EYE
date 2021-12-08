@@ -342,7 +342,7 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
         } else if (data.contains("quit") || data.contains("close") || data.contains("stop"))
             finishAffinity();
         else if (data.contains("apphelp")) {
-            BaseApplication.getInstance().startHelpNotation();
+            BaseApplication.getInstance().startHelpNotation(this);
         } else if (data.contains("location") || data.contains("place")) {
             getCurrentLocation();
         } else if (data.contains("help") || data.contains("emergency")) {

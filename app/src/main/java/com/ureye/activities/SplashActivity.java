@@ -4,10 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+
 import com.ureye.BaseApplication;
 import com.ureye.R;
 import com.ureye.interfaces.TextToSpeechListener;
+import com.ureye.utils.Constants;
+import com.ureye.utils.StaticUtils;
 import com.ureye.utils.UREyeAppStorage;
+
+import java.util.List;
 
 public class SplashActivity extends BaseActivity {
 
@@ -41,13 +48,31 @@ public class SplashActivity extends BaseActivity {
 
                 }
             });
-            new Handler().postDelayed(() -> BaseApplication.getInstance().startHelpNotation(), 500);
+            checkForPermissions();
         } else {
             new Handler().postDelayed(() -> {
                 startActivity(new Intent(SplashActivity.this, MainActivity.class));
                 finishAffinity();
             }, 1000);
         }
+    }
+
+    public void checkForPermissions() {
+        if (!StaticUtils.allPermissionsGranted(this)) {
+            StaticUtils.showToast(this, "Please allow all permissions to open the app functionality");
+            List<String> allNeededPermissions = StaticUtils.getRuntimePermissions(this);
+            if (!allNeededPermissions.isEmpty()) {
+                ActivityCompat.requestPermissions(this, allNeededPermissions.toArray(new String[0]), Constants.PERMISSION_REQUESTS);
+            }
+        } else {
+            new Handler().postDelayed(() -> BaseApplication.getInstance().startHelpNotation(this), 750);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        checkForPermissions();
     }
 
     @Override

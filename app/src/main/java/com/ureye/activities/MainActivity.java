@@ -241,7 +241,7 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
         if (data.contains("quit") || data.contains("close") || data.contains("stop"))
             finishAffinity();
         else if (data.contains("apphelp")) {
-            BaseApplication.getInstance().startHelpNotation();
+            BaseApplication.getInstance().startHelpNotation(this);
         } else if (data.contains("location") || data.contains("place")) {
             if (StaticUtils.allPermissionsGranted(this)) {
                 getCurrentLocation();
