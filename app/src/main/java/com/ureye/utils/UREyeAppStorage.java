@@ -6,10 +6,12 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ureye.BuildConfig;
+import com.ureye.utils.common.LocationsModel;
 import com.ureye.utils.facerecognition.SimilarityClassifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UREyeAppStorage {
@@ -21,6 +23,7 @@ public class UREyeAppStorage {
 
     public static final String SP_IS_FIRST_TIME = "SP_IS_FIRST_TIME";
     public static final String SP_FACES_STORED = "SP_FACES_STORED";
+    public static final String SP_SAVED_LOCATIONS = "SP_SAVED_LOCATIONS";
 
     private UREyeAppStorage(Context context) {
         mContext = context;
@@ -79,6 +82,27 @@ public class UREyeAppStorage {
             entry.getValue().setExtra(output);
         }
         return retrievedMap;
+    }
+
+    //Save Locations to Shared Preferences.Json String from Location
+    public void insertLocationToSP(LocationsModel locationsModel) {
+        ArrayList<LocationsModel> locationsModelArrayList = readSavedLocationsFromSP();
+        if (locationsModelArrayList.contains(locationsModel)) {
+            locationsModelArrayList.remove(locationsModel);
+        }
+        locationsModelArrayList.add(locationsModel);
+        setValue(SP_SAVED_LOCATIONS, new Gson().toJson(locationsModelArrayList));
+    }
+
+    //Load Faces from Shared Preferences.Json String to Location object
+    public ArrayList<LocationsModel> readSavedLocationsFromSP() {
+        ArrayList<LocationsModel> locationsModelArrayList;
+        Gson gson = new Gson();
+        String defValue = gson.toJson(new ArrayList<LocationsModel>());
+        String response = getValue(SP_SAVED_LOCATIONS, defValue);
+        locationsModelArrayList = gson.fromJson(response, new TypeToken<List<LocationsModel>>() {
+        }.getType());
+        return locationsModelArrayList;
     }
 
     /**

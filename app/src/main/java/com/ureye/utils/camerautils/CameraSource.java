@@ -30,11 +30,6 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 
-/**
- * Manages the camera and allows UI updates on top of it (e.g. overlaying extra Graphics or
- * displaying extra information). This receives preview frames from the camera at a specified rate,
- * sending those frames to child classes' detectors / classifiers as fast as it is able to process.
- */
 public class CameraSource {
     @SuppressLint("InlinedApi")
     public static final int CAMERA_FACING_BACK = CameraInfo.CAMERA_FACING_BACK;

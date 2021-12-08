@@ -3,9 +3,14 @@ package com.ureye.activities;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.location.Location;
+import android.location.LocationManager;
 import android.media.Image;
 import android.os.Bundle;
+import android.speech.SpeechRecognizer;
 import android.text.InputType;
+import android.text.TextUtils;
+import android.util.Log;
 import android.util.Pair;
 import android.util.Size;
 import android.view.View;
@@ -26,12 +31,15 @@ import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
+import com.ureye.BaseApplication;
 import com.ureye.R;
 import com.ureye.databinding.ActivityFaceRecognitionBinding;
+import com.ureye.interfaces.VoiceRecognisationListener;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
 import com.ureye.utils.UREyeAppStorage;
 import com.ureye.utils.common.BitmapUtils;
+import com.ureye.utils.common.LocationsModel;
 import com.ureye.utils.facerecognition.SimilarityClassifier;
 
 import org.tensorflow.lite.Interpreter;
@@ -45,24 +53,27 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class FaceRecognitionActivity extends BaseActivity implements View.OnClickListener {
+public class FaceRecognitionActivity extends BaseActivity implements View.OnClickListener, VoiceRecognisationListener {
 
-    FaceDetector detector;
-
+    private FaceDetector detector;
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
-    Interpreter tfLite;
-    CameraSelector cameraSelector;
+    private Interpreter tfLite;
+    private CameraSelector cameraSelector;
     private boolean start = true;
     private final boolean flipX = false;
+    private static final String TAG = FaceRecognitionActivity.class.getName();
 
-    int[] intValues;
-
-    float[][] embeedings;
-    ProcessCameraProvider cameraProvider;
+    private int[] intValues;
+    private float[][] embeedings;
+    private ProcessCameraProvider cameraProvider;
 
     private HashMap<String, SimilarityClassifier.Recognition> savedFacesList;
     private ActivityFaceRecognitionBinding activityFaceRecognitionBinding;
     private UREyeAppStorage urEyeAppStorage;
+    private boolean isAddFaceActive;
+    private SpeechRecognizer speechRecognizer;
+    private Location currentLocation;
+    private LocationManager mLocationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +87,9 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     @Override
     public void initComponents() {
         activityFaceRecognitionBinding.addFace.setVisibility(View.INVISIBLE);
-
         activityFaceRecognitionBinding.facePreview.setVisibility(View.INVISIBLE);
         activityFaceRecognitionBinding.previewInfo.setText("\n Recognized Face:");
 
-//        activityFaceRecognitionBinding.recognize.setOnClickListener(this);
         activityFaceRecognitionBinding.addFace.setOnClickListener(this);
 
         //Load model
@@ -92,32 +101,30 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
         //Initialize Face Detector
         FaceDetectorOptions highAccuracyOpts = new FaceDetectorOptions.Builder()
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
-//                .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
                 .build();
         detector = FaceDetection.getClient(highAccuracyOpts);
 
         cameraBind();
+        if (SpeechRecognizer.isRecognitionAvailable(this))
+            setUpVoiceRecognition();
+    }
+
+    private void setUpVoiceRecognition() {
+        speechRecognizer = BaseApplication.getInstance().getVoiceRecognizer(this);
+        if (speechRecognizer == null)
+            StaticUtils.showToast(this, "No Speech Recognizer is available. Please install it in device with Speech Recognition available");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        speechRecognizer.destroy();
+        BaseApplication.getInstance().stopSpeaking();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-           /* case R.id.recognize:
-                if (activityFaceRecognitionBinding.recognize.getText().toString().equals("Recognize")) {
-                    start = true;
-                    activityFaceRecognitionBinding.recognize.setText("Add Face");
-                    activityFaceRecognitionBinding.addFace.setVisibility(View.INVISIBLE);
-                    activityFaceRecognitionBinding.recoName.setVisibility(View.VISIBLE);
-                    activityFaceRecognitionBinding.facePreview.setVisibility(View.INVISIBLE);
-                    activityFaceRecognitionBinding.previewInfo.setText("\n    Recognized Face:");
-                } else {
-                    activityFaceRecognitionBinding.recognize.setText("Recognize");
-                    activityFaceRecognitionBinding.addFace.setVisibility(View.VISIBLE);
-                    activityFaceRecognitionBinding.recoName.setVisibility(View.INVISIBLE);
-                    activityFaceRecognitionBinding.facePreview.setVisibility(View.VISIBLE);
-                    activityFaceRecognitionBinding.previewInfo.setText("1.Bring Face in view of Camera.\n\n2.Your Face preview will appear here.\n\n3.Click Add button to save face.");
-                }
-                break;*/
             case R.id.add_face:
                 addFace();
                 break;
@@ -127,7 +134,6 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
     }
 
     private void addFace() {
-//        if (start) {
         start = false;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter Name");
@@ -139,7 +145,7 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
         builder.setView(input);
 
         // Set up the buttons
-        builder.setPositiveButton("ADD", (dialog, which) -> {
+        builder.setPositiveButton("Add", (dialog, which) -> {
             //Create and Initialize new object with Face embeddings and Name.
             SimilarityClassifier.Recognition result = new SimilarityClassifier.Recognition("0", "", -1f);
             result.setExtra(embeedings);
@@ -154,7 +160,6 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
         });
 
         builder.show();
-//        }
     }
 
     //Bind camera and preview view
@@ -193,30 +198,29 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
             }
             if (image != null) {
                 detector.process(image)
-                        .addOnSuccessListener(
-                                faces -> {
-                                    if (faces.size() != 0) {
-                                        Face face = faces.get(0);
-                                        Bitmap rotateBitmap = BitmapUtils.rotateBitmap(BitmapUtils.toBitmap(mediaImage), imageProxy.getImageInfo().getRotationDegrees(), false, false);
-                                        RectF boundingBox = new RectF(face.getBoundingBox());
-                                        Bitmap croppedFace = BitmapUtils.getCropBitmapByCPU(rotateBitmap, boundingBox);
+                        .addOnSuccessListener(faces -> {
+                            if (faces.size() != 0) {
+                                Face face = faces.get(0);
+                                Bitmap rotateBitmap = BitmapUtils.rotateBitmap(BitmapUtils.toBitmap(mediaImage), imageProxy.getImageInfo().getRotationDegrees(), false, false);
+                                RectF boundingBox = new RectF(face.getBoundingBox());
+                                Bitmap croppedFace = BitmapUtils.getCropBitmapByCPU(rotateBitmap, boundingBox);
 
-                                        if (flipX)
-                                            croppedFace = BitmapUtils.rotateBitmap(croppedFace, 0, flipX, false);
-                                        //Scale the acquired Face to 112*112 which is required input for model
-                                        Bitmap scaled = BitmapUtils.getResizedBitmap(croppedFace, 112, 112);
+                                if (flipX)
+                                    croppedFace = BitmapUtils.rotateBitmap(croppedFace, 0, flipX, false);
+                                //Scale the acquired Face to 112*112 which is required input for model
+                                Bitmap scaled = BitmapUtils.getResizedBitmap(croppedFace, 112, 112);
 
-                                        if (start)
-                                            recognizeImage(scaled);
-                                        try {
-                                            Thread.sleep(20);  //Camera preview refreshed every 10 millisec(adjust as required)
-                                        } catch (InterruptedException e) {
-                                            e.printStackTrace();
-                                        }
-                                    } else {
-                                        activityFaceRecognitionBinding.recoName.setText(savedFacesList.isEmpty() ? "Add Face" : "No Face Detected!");
-                                    }
-                                })
+                                if (start)
+                                    recognizeImage(scaled);
+                                try {
+                                    Thread.sleep(20);  //Camera preview refreshed every 20 millisec(adjust as required)
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            } else {
+                                activityFaceRecognitionBinding.recoName.setText(savedFacesList.isEmpty() ? "Add Face" : "No Face Detected!");
+                            }
+                        })
                         .addOnFailureListener(e -> {
                         })
                         .addOnCompleteListener(task -> {
@@ -243,17 +247,6 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
         for (int i = 0; i < Constants.INPUT_SIZE; ++i) {
             for (int j = 0; j < Constants.INPUT_SIZE; ++j) {
                 int pixelValue = intValues[i * Constants.INPUT_SIZE + j];
-               /* if (Constants.IS_MODEL_QUANTIZED) {
-                    // Quantized model
-                    imgData.put((byte) ((pixelValue >> 16) & 0xFF));
-                    imgData.put((byte) ((pixelValue >> 8) & 0xFF));
-                    imgData.put((byte) (pixelValue & 0xFF));
-                } else {
-                    // Float model
-                    imgData.putFloat((((pixelValue >> 16) & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
-                    imgData.putFloat((((pixelValue >> 8) & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
-                    imgData.putFloat(((pixelValue & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
-                }*/
                 imgData.putFloat((((pixelValue >> 16) & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
                 imgData.putFloat((((pixelValue >> 8) & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
                 imgData.putFloat(((pixelValue & 0xFF) - Constants.IMAGE_MEAN) / Constants.IMAGE_STD);
@@ -279,19 +272,22 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
                     activityFaceRecognitionBinding.recoName.setText(name);
                     activityFaceRecognitionBinding.addFace.setVisibility(View.INVISIBLE);
                     activityFaceRecognitionBinding.facePreview.setVisibility(View.INVISIBLE);
+                    BaseApplication.getInstance().continuousTextToSpeech("Found " + name);
+                    isAddFaceActive = false;
                 } else {
                     activityFaceRecognitionBinding.recoName.setText("Unknown");
-//                    addFace();
                     activityFaceRecognitionBinding.addFace.setVisibility(View.VISIBLE);
                     activityFaceRecognitionBinding.facePreview.setVisibility(View.VISIBLE);
+                    BaseApplication.getInstance().continuousTextToSpeech(getString(R.string.new_face_found));
+                    isAddFaceActive = true;
                 }
-//                activityFaceRecognitionBinding.recoName.setText(distance < 1.000f ? name : "Unknown");
-                System.out.println("nearest: " + name + " - distance: " + distance);
             }
         } else {
             activityFaceRecognitionBinding.addFace.setVisibility(View.VISIBLE);
             activityFaceRecognitionBinding.facePreview.setVisibility(View.VISIBLE);
             activityFaceRecognitionBinding.recoName.setText("Unknown");
+            BaseApplication.getInstance().continuousTextToSpeech(getString(R.string.new_face_found));
+            isAddFaceActive = false;
         }
     }
 
@@ -311,6 +307,95 @@ public class FaceRecognitionActivity extends BaseActivity implements View.OnClic
             }
         }
         return ret;
+    }
+
+    @Override
+    public void startListening() {
+    }
+
+    @Override
+    public void errorDetecting(String message, int errorCode) {
+    }
+
+    @Override
+    public void completedListening(String data) {
+        Log.e(TAG, "voice data from user: " + data);
+        if (!TextUtils.isEmpty(data)) {
+            switch (StaticUtils.getCatFromSpeech(data)) {
+                case Constants.SELECTION_CATEGORY_OBJECT:
+                case Constants.SELECTION_CATEGORY_TEXT:
+                case Constants.SELECTION_CATEGORY_FACE:
+                case Constants.SELECTION_CATEGORY_SAVED:
+                    onBackPressed();
+                    break;
+                default:
+                    performAppropriateAction(data);
+                    break;
+            }
+        }
+    }
+
+    private void performAppropriateAction(String data) {
+        if (data.contains("add") || data.contains("yes") || data.contains("ok") || data.contains("okay")) {
+            BaseApplication.getInstance().runTextToSpeech("Please say a name");
+//            addFace();
+        } else if (data.contains("quit") || data.contains("close") || data.contains("stop"))
+            finishAffinity();
+        else if (data.contains("apphelp")) {
+            BaseApplication.getInstance().startHelpNotation();
+        } else if (data.contains("location") || data.contains("place")) {
+            getCurrentLocation();
+        } else if (data.contains("help") || data.contains("emergency")) {
+            StaticUtils.showToast(this, R.string.emergency_alert);
+            BaseApplication.getInstance().stopListening(this);
+            BaseApplication.getInstance().runTextToSpeech(getString(R.string.emergency_alert));
+        } else if (data.contains("back")) {
+            onBackPressed();
+        } else {
+            if (isAddFaceActive) {
+                isAddFaceActive = false;
+                addFaceWithName(data);
+            }
+        }
+    }
+
+    private void addFaceWithName(String data) {
+        start = false;
+        //Create and Initialize new object with Face embeddings and Name.
+        SimilarityClassifier.Recognition result = new SimilarityClassifier.Recognition("0", "", -1f);
+        result.setExtra(embeedings);
+        savedFacesList.put(data, result);
+        start = true;
+        urEyeAppStorage.insertFacesToSP(savedFacesList);
+        BaseApplication.getInstance().runTextToSpeech("Added "+data+" to storage");
+    }
+
+    private void getCurrentLocation() {
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean hasGps = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean hasNetwork = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        Location lastKnownLocationByGps = null, lastKnownLocationByNetwork = null;
+        if (hasGps) {
+            lastKnownLocationByGps = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        } else {
+            StaticUtils.turnOnGPSInSystem(this);
+        }
+        if (hasNetwork) {
+            lastKnownLocationByNetwork = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+
+        if (lastKnownLocationByGps != null && lastKnownLocationByNetwork != null) {
+            currentLocation = lastKnownLocationByGps.getAccuracy() > lastKnownLocationByNetwork.getAccuracy() ? lastKnownLocationByGps : lastKnownLocationByNetwork;
+        } else if (lastKnownLocationByGps == null && lastKnownLocationByNetwork != null) {
+            currentLocation = lastKnownLocationByNetwork;
+        } else if (lastKnownLocationByGps != null && lastKnownLocationByNetwork == null) {
+            currentLocation = lastKnownLocationByGps;
+        }
+        if (currentLocation != null) {
+            StaticUtils.showToast(this, "Your Location: " + "\n" + "Latitude: " + currentLocation.getLatitude() + "\n" + "Longitude: " + currentLocation.getLongitude());
+            BaseApplication.getInstance().runTextToSpeech("Saved your current Location");
+            UREyeAppStorage.getInstance(this).insertLocationToSP(new LocationsModel(currentLocation));
+        }
     }
 
 }

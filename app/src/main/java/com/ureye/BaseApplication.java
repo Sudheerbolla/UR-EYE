@@ -28,7 +28,6 @@ public class BaseApplication extends MultiDexApplication {
     private static final String TAG = "BaseApplication";
     private Intent speechRecognizerIntent;
     private TextToSpeechListener textToSpeechListener;
-    private VoiceRecognisationListener voiceRecognisationListener;
 
     public synchronized static BaseApplication getInstance() {
         if (baseApplication == null) baseApplication = new BaseApplication();
@@ -42,7 +41,6 @@ public class BaseApplication extends MultiDexApplication {
     }
 
     public SpeechRecognizer getVoiceRecognizer(VoiceRecognisationListener voiceRecognisationListener) {
-        this.voiceRecognisationListener = voiceRecognisationListener;
         if (SpeechRecognizer.isRecognitionAvailable(this)) {
             if (speechRecognizer == null) {
                 speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
@@ -205,6 +203,33 @@ public class BaseApplication extends MultiDexApplication {
         if (textToSpeech == null)
             getTextToSpeechClient(this, textToSpeechListener);
         textToSpeech.speak(data, TextToSpeech.QUEUE_FLUSH, null, TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED);
+    }
+
+    public void continuousTextToSpeech(String data) {
+        if (textToSpeechListener != null) {
+            textToSpeechListener.proceedSpeaking(data);
+        }
+        if (textToSpeech == null)
+            getTextToSpeechClient(this, textToSpeechListener);
+        if (!textToSpeech.isSpeaking())
+            textToSpeech.speak(data, TextToSpeech.QUEUE_FLUSH, null, TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED);
+    }
+
+    public void addTextToSpeech(String data) {
+        if (textToSpeechListener != null) {
+            textToSpeechListener.proceedSpeaking(data);
+        }
+        if (textToSpeech == null)
+            getTextToSpeechClient(this, textToSpeechListener);
+        textToSpeech.speak(data, TextToSpeech.QUEUE_ADD, null, TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED);
+    }
+
+    public void stopSpeaking() {
+        if (textToSpeech != null && textToSpeech.isSpeaking()) textToSpeech.stop();
+    }
+
+    public void startHelpNotation() {
+        runTextToSpeech(getString(R.string.app_help_intro));
     }
 
 }

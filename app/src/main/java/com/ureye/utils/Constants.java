@@ -22,10 +22,10 @@ public class Constants {
     public static final int SELECTION_CATEGORY_FACE = 3;
     public static final int SELECTION_CATEGORY_SAVED = 4;
 
-    public static final String[] OBJECT_DETECTION_KEYWORDS = new String[]{"one", "1", "object", "motion","travel"};
-    public static final String[] TEXT_DETECTION_KEYWORDS = new String[]{"two", "2", "text", "label", "heading","reader"};
-    public static final String[] FACE_DETECTION_KEYWORDS = new String[]{"three", "3", "face", "friends", "people","meeting"};
-    public static final String[] SAVED_DETECTION_KEYWORDS = new String[]{"four", "4", "localdata", "saved"};
-    public static final String[] GENERIC_KEYWORDS = new String[]{"close", "stop", "back", "apphelp", "help", "emergency", "quit"};
+    public static final String[] OBJECT_DETECTION_KEYWORDS = new String[]{"one", "1", "object", "motion", "travel"};
+    public static final String[] TEXT_DETECTION_KEYWORDS = new String[]{"two", "2", "to", "text", "label", "heading", "reader"};
+    public static final String[] FACE_DETECTION_KEYWORDS = new String[]{"three", "3", "face", "friends", "people", "meeting"};
+    public static final String[] SAVED_DETECTION_KEYWORDS = new String[]{"four", "4", "localdata", "saved", "mydata", "data"};
+    public static final String[] GENERIC_KEYWORDS = new String[]{"close", "stop", "back", "apphelp", "help", "emergency", "quit", "location","place"};
 
 }

@@ -23,11 +23,9 @@ import android.graphics.RectF;
 
 import com.google.mlkit.vision.objects.DetectedObject;
 import com.google.mlkit.vision.objects.DetectedObject.Label;
+import com.ureye.BaseApplication;
 import com.ureye.utils.common.GraphicOverlay;
 
-/**
- * Draw the detected object info in preview.
- */
 public class ObjectGraphic extends GraphicOverlay.Graphic {
 
     private static final float TEXT_SIZE = 54.0f;
@@ -105,34 +103,15 @@ public class ObjectGraphic extends GraphicOverlay.Graphic {
         rect.bottom = translateY(rect.bottom);
         canvas.drawRect(rect, boxPaints[colorID]);
 
-        // Draws other object info.
-        canvas.drawRect(
-                rect.left - STROKE_WIDTH,
-                rect.top + yLabelOffset,
-                rect.left + textWidth + (2 * STROKE_WIDTH),
-                rect.top,
-                labelPaints[colorID]
-        );
+        canvas.drawRect(rect.left - STROKE_WIDTH, rect.top + yLabelOffset, rect.left + textWidth + (2 * STROKE_WIDTH), rect.top, labelPaints[colorID]);
         yLabelOffset += TEXT_SIZE;
-    /*canvas.drawText(
-        "Tracking ID: " + object.getTrackingId(),
-        rect.left,
-        rect.top + yLabelOffset,
-        textPaints[colorID]);*/
         yLabelOffset += lineHeight;
 
         for (Label label : object.getLabels()) {
             canvas.drawText(label.getText(), rect.left, rect.top + yLabelOffset, textPaints[colorID]);
             yLabelOffset += lineHeight;
-/*
-      canvas.drawText(
-          String.format(Locale.US, LABEL_FORMAT, label.getConfidence() * 100, label.getIndex()),
-          rect.left,
-          rect.top + yLabelOffset,
-          textPaints[colorID]);
-*/
-
             yLabelOffset += lineHeight;
+            BaseApplication.getInstance().addTextToSpeech("Detected " + label.getText());
         }
     }
 }

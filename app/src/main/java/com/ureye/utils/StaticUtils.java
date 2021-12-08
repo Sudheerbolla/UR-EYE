@@ -2,17 +2,22 @@ package com.ureye.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
+import android.provider.Settings;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
 import com.google.mlkit.common.model.LocalModel;
 import com.google.mlkit.vision.objects.ObjectDetectorOptionsBase;
 import com.google.mlkit.vision.objects.custom.CustomObjectDetectorOptions;
+import com.ureye.utils.common.LocationsModel;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,9 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StaticUtils {
-
-    public static int SCREEN_HEIGHT = 0;
-    public static int SCREEN_WIDTH = 0;
 
     public static boolean isPermissionGranted(Context context, String permission) {
         return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
@@ -61,14 +63,39 @@ public class StaticUtils {
         return false;
     }
 
+    public static void showSavedLocations(Context context) {
+        ArrayList<LocationsModel> locationsModelArrayList = UREyeAppStorage.getInstance(context).readSavedLocationsFromSP();
+        if (locationsModelArrayList.isEmpty()) {
+            showToast(context, "No Saved Locations Found.");
+            return;
+        }
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(context);
+        builderSingle.setTitle("Saved Locations");
+
+        final ArrayAdapter<LocationsModel> arrayAdapter = new ArrayAdapter<>(context, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.addAll(locationsModelArrayList);
+
+        builderSingle.setNegativeButton("cancel", (dialog, which) -> dialog.dismiss());
+
+        builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
+        });
+        builderSingle.show();
+    }
+
     public static int getCatFromSpeech(String data) {
         int result = -1;
-        if (isKeyWordPresent(data,Constants.GENERIC_KEYWORDS)) result = 0;
+        if (isKeyWordPresent(data, Constants.GENERIC_KEYWORDS)) result = 0;
         else if (isKeyWordPresent(data, Constants.OBJECT_DETECTION_KEYWORDS)) result = 1;
         else if (isKeyWordPresent(data, Constants.TEXT_DETECTION_KEYWORDS)) result = 2;
         else if (isKeyWordPresent(data, Constants.FACE_DETECTION_KEYWORDS)) result = 3;
-        else if (isKeyWordPresent(data,Constants.SAVED_DETECTION_KEYWORDS)) result = 4;
+        else if (isKeyWordPresent(data, Constants.SAVED_DETECTION_KEYWORDS)) result = 4;
         return result;
+    }
+
+    public static void turnOnGPSInSystem(Context context) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes", (dialog, which) -> context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))).setNegativeButton("No", (dialog, which) -> dialog.cancel());
+        builder.create().show();
     }
 
     public static boolean isPortraitMode(Context context) {

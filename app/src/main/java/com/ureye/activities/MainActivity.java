@@ -1,6 +1,8 @@
 package com.ureye.activities;
 
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
@@ -19,6 +21,8 @@ import com.ureye.interfaces.TextToSpeechListener;
 import com.ureye.interfaces.VoiceRecognisationListener;
 import com.ureye.utils.Constants;
 import com.ureye.utils.StaticUtils;
+import com.ureye.utils.UREyeAppStorage;
+import com.ureye.utils.common.LocationsModel;
 
 import java.util.List;
 
@@ -28,11 +32,42 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
     private SpeechRecognizer speechRecognizer;
     private TextToSpeech textToSpeech;
     private ActivityMainBinding activityMainBinding;
+    Location currentLocation;
+    LocationManager mLocationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+    }
+
+    private void getCurrentLocation() {
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        boolean hasGps = mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean hasNetwork = mLocationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        Location lastKnownLocationByGps = null, lastKnownLocationByNetwork = null;
+        if (hasGps) {
+            lastKnownLocationByGps = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        } else {
+            StaticUtils.turnOnGPSInSystem(this);
+        }
+
+        if (hasNetwork) {
+            lastKnownLocationByNetwork = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+        }
+
+        if (lastKnownLocationByGps != null && lastKnownLocationByNetwork != null) {
+            currentLocation = lastKnownLocationByGps.getAccuracy() > lastKnownLocationByNetwork.getAccuracy() ? lastKnownLocationByGps : lastKnownLocationByNetwork;
+        } else if (lastKnownLocationByGps == null && lastKnownLocationByNetwork != null) {
+            currentLocation = lastKnownLocationByNetwork;
+        } else if (lastKnownLocationByGps != null && lastKnownLocationByNetwork == null) {
+            currentLocation = lastKnownLocationByGps;
+        }
+        if (currentLocation != null) {
+            StaticUtils.showToast(this, "Your Location: " + "\n" + "Latitude: " + currentLocation.getLatitude() + "\n" + "Longitude: " + currentLocation.getLongitude());
+            BaseApplication.getInstance().runTextToSpeech("Saved your current Location");
+            UREyeAppStorage.getInstance(this).insertLocationToSP(new LocationsModel(currentLocation));
+        }
     }
 
     @Override
@@ -73,12 +108,8 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
         startActivity(new Intent(this, FaceRecognitionActivity.class));
     }
 
-    private void openSavedDataScreen() {
-        StaticUtils.showToast(this, getString(R.string.module_under_development));
-    }
-
     private void openTextDetection() {
-        StaticUtils.showToast(this, getString(R.string.module_under_development));
+        startActivity(new Intent(this, TextRecognitionActivity.class));
     }
 
     private void openObjectDetection() {
@@ -89,6 +120,7 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
     protected void onDestroy() {
         super.onDestroy();
         speechRecognizer.destroy();
+        textToSpeech.stop();
     }
 
     @Override
@@ -135,7 +167,7 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
                     openTextDetection();
                     break;
                 case R.id.txtViewSavedData:
-                    openSavedDataScreen();
+                    StaticUtils.showSavedLocations(this);
                     break;
                 case R.id.rootLayout:
                     BaseApplication.getInstance().runTextToSpeech("Starting voice recognizer");
@@ -194,6 +226,12 @@ public class MainActivity extends BaseActivity implements TextToSpeechListener, 
             finishAffinity();
         else if (data.contains("apphelp")) {
 //            We will show app help or guide
+        } else if (data.contains("location") || data.contains("place")) {
+            if (StaticUtils.allPermissionsGranted(this)) {
+                getCurrentLocation();
+            } else {
+                checkForPermissions();
+            }
         } else if (data.contains("help") || data.contains("emergency")) {
             StaticUtils.showToast(this, R.string.emergency_alert);
             BaseApplication.getInstance().stopListening(this);

@@ -32,9 +32,6 @@ import com.ureye.utils.common.VisionProcessorBase;
 
 import java.util.List;
 
-/**
- * A processor to run object detector.
- */
 public class ObjectDetectorProcessor extends VisionProcessorBase<List<DetectedObject>> {
 
     private static final String TAG = "ObjectDetectorProcessor";

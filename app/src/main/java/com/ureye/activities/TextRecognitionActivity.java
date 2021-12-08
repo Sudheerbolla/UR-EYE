@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.common.MlKitException;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+import com.ureye.BaseApplication;
 import com.ureye.R;
 import com.ureye.databinding.ActivityCameraDetectionBinding;
 import com.ureye.utils.Constants;
@@ -54,6 +55,7 @@ public final class TextRecognitionActivity extends BaseActivity implements OnReq
 
     @Override
     public void initComponents() {
+
         cameraSelector = new CameraSelector.Builder().requireLensFacing(Constants.CAM_FACE).build();
 
         new ViewModelProvider(this, AndroidViewModelFactory.getInstance(getApplication()))
@@ -92,6 +94,7 @@ public final class TextRecognitionActivity extends BaseActivity implements OnReq
         if (imageProcessor != null) {
             imageProcessor.stop();
         }
+        BaseApplication.getInstance().stopSpeaking();
     }
 
     private void bindAllCameraUseCases() {
@@ -120,7 +123,7 @@ public final class TextRecognitionActivity extends BaseActivity implements OnReq
         }*/
         previewUseCase = builder.build();
         previewUseCase.setSurfaceProvider(cameraDetectionBinding.previewView.getSurfaceProvider());
-        cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, previewUseCase);
+        cameraProvider.bindToLifecycle(this, cameraSelector, previewUseCase);
     }
 
     private void bindAnalysisUseCase() {
@@ -172,7 +175,7 @@ public final class TextRecognitionActivity extends BaseActivity implements OnReq
                     }
                 });
 
-        cameraProvider.bindToLifecycle(/* lifecycleOwner= */ this, cameraSelector, analysisUseCase);
+        cameraProvider.bindToLifecycle(this, cameraSelector, analysisUseCase);
     }
 
     @Override

@@ -8,7 +8,6 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.databinding.DataBindingUtil;
 
@@ -52,12 +51,8 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
     public void initComponents() {
         localModel = new LocalModel.Builder().setAssetFilePath(Constants.OBJECT_MODEL_TFLITE).build();
         detectionTaskCallback = detectionTask -> detectionTask.addOnSuccessListener(this::onDetectionTaskSuccess).addOnFailureListener(this::onDetectionTaskFailure);
-        checkPermissons();
-    }
-
-    private void checkPermissons() {
-        if (!StaticUtils.allPermissionsGranted(this)) {
-            ActivityCompat.requestPermissions(this, StaticUtils.getRuntimePermissions(this).toArray(new String[0]), Constants.PERMISSION_REQUESTS);
+        if (StaticUtils.allPermissionsGranted(this)) {
+            createThenStartCameraXSource();
         }
     }
 
@@ -68,7 +63,9 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
         if (cameraXSource != null) {
             cameraXSource.start();
         } else {
-            createThenStartCameraXSource();
+            if (StaticUtils.allPermissionsGranted(this)) {
+                createThenStartCameraXSource();
+            }
         }
     }
 
@@ -90,7 +87,9 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        createThenStartCameraXSource();
+        if (StaticUtils.allPermissionsGranted(this)) {
+            createThenStartCameraXSource();
+        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -123,7 +122,6 @@ public final class ObjectDetectionActivity extends BaseActivity implements OnReq
             }
         }
         Log.v(TAG, "Number of object been detected: " + results.size());
-
         for (DetectedObject object : results) {
             cameraDetectionBinding.graphicOverlay.add(new ObjectGraphic(cameraDetectionBinding.graphicOverlay, object));
         }

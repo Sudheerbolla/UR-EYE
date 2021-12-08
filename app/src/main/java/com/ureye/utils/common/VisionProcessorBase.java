@@ -34,13 +34,6 @@ import java.nio.ByteBuffer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-/**
- * Abstract base class for vision frame processors. Subclasses need to implement {@link
- * #onSuccess(Object, GraphicOverlay)} to define what they want to with the detection results and
- * {@link #detectInImage(InputImage)} to specify the detector object.
- *
- * @param <T> The type of the detected feature.
- */
 public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
 
     protected static final String MANUAL_TESTING_LOG = "LogTagForTest";
@@ -314,20 +307,13 @@ public abstract class VisionProcessorBase<T> implements VisionImageProcessor {
                         graphicOverlay.add(new CameraImageGraphic(graphicOverlay, originalCameraImage));
                     }
                     VisionProcessorBase.this.onSuccess(results, graphicOverlay);
-                   /* if (!PreferenceUtils.shouldHideDetectionInfo(graphicOverlay.getContext())) {
-                        graphicOverlay.add(
-                                new InferenceInfoGraphic(
-                                        graphicOverlay,
-                                        currentFrameLatencyMs,
-                                        currentDetectorLatencyMs,
-                                        shouldShowFps ? framesPerSecond : null));
-                    }*/
-                        graphicOverlay.add(
-                                new InferenceInfoGraphic(
-                                        graphicOverlay,
-                                        currentFrameLatencyMs,
-                                        currentDetectorLatencyMs,
-                                        shouldShowFps ? framesPerSecond : null));
+                    /*graphicOverlay.add(
+                            new InferenceInfoGraphic(
+                                    graphicOverlay,
+                                    currentFrameLatencyMs,
+                                    currentDetectorLatencyMs,
+                                    shouldShowFps ? framesPerSecond : null));*/
+                    graphicOverlay.add(new InferenceInfoGraphic(graphicOverlay));
                     graphicOverlay.postInvalidate();
                 })
                 .addOnFailureListener(
