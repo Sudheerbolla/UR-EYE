@@ -1,21 +1,12 @@
 # UR-EYE
 
-CSIS: 4495 Applied Research Project
-PROJECT NAME: <b>UR EYE</b>
-
-<b>Project Contributors</b>
-- Mili Modi
-- Prudhvi charan thirumal reddy
-- Naga Sudheer Bolla
-
-Our project idea has evolved from a serious real world problem, where we do observe in daily life about how the blind people face problems with simple things in day to day life.
+My main idea has evolved from a serious real world problem, where we do observe in daily life about how the blind people face problems with simple things in day to day life.
 We aim to make their life a little bit easy, by building an Android application for assisting the blind people as much as possible using the technology.
 
 We will create a custom camera which focuses on the following features.
 1. Object detection: when walking or standing, warns user if they are going too close or crash into something or something is approaching them.
 2. Text Detection: Detecting the text from images, books or sign boards and reads it out.
-3. Face detection and facial expression capture: Captures the facial expression of the person it is pointed at, and lets the users know their expression as they can’t find it 
-out with their own eyes.
+3. Face detection and facial expression capture: Captures the facial expression of the person it is pointed at, and lets the users know their expression as they can’t find it out with their own eyes.
 
 We will enable voice recognition command from user to perform the in-app functions along with touch features. We will try to implement the camera to run in the background even
 when screen is locked as it might help with battery performance and efficiency.
@@ -42,9 +33,7 @@ To exit from current screen, they need to say exit screen command.
 3.	<b>Meeting Mode</b>: If user selects this mode, we will open MLKIT SDK from firebase and detects the facial expression and say their expression.
 4.	<b>Saved</b>: This will have saved paths and text, where users can access them.
 
-<b>Experimental Thought</b>: We might add location tracking and emergency alert feature as well. But for this, we might need setup for backend server and all. So we are still
-                             in discussion, whether to implement it or not. We will update you soon with this feature as well. For now, this is our base idea for project.
-
+<b>Experimental Thought</b>: In future, I might add location tracking and emergency alert feature as well. But for this, we might need setup for backend server for secure server communication.
 
 
 
